@@ -43,21 +43,32 @@ function validateEnvironmentVariables(): void {
   }
 }
 
-// API Configuration - uses secure backend proxy
+// API Configuration - uses Cloudflare Worker proxy for CORS-free requests
 const API_CONFIG = {
-  // Always use backend proxy for security
-  baseUrl: "/api",
-  // Legacy config for development fallback only
+  // Get the appropriate base URL based on environment
+  get baseUrl() {
+    // If Worker proxy URL is configured, use it (production/GitHub Pages)
+    if (import.meta.env.VITE_WORKER_PROXY_URL) {
+      return import.meta.env.VITE_WORKER_PROXY_URL;
+    }
+
+    // For local development, use local proxy
+    if (import.meta.env.DEV) {
+      return "/api";
+    }
+
+    // Fallback for GitHub Pages without Worker URL configured
+    return "https://gen-image-worker.your-subdomain.workers.dev";
+  },
+  // Legacy config for development fallback only (deprecated)
   get legacyAccountId() {
     return import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID;
   },
   get legacyApiToken() {
     return import.meta.env.VITE_CLOUDFLARE_API_TOKEN;
   },
-  legacyBaseUrl: import.meta.env.DEV
-    ? "/api/cloudflare"
-    : import.meta.env.VITE_API_BASE_URL ||
-      "https://api.cloudflare.com/client/v4",
+  legacyBaseUrl:
+    import.meta.env.VITE_API_BASE_URL || "https://api.cloudflare.com/client/v4",
   model: "@cf/stabilityai/stable-diffusion-xl-base-1.0",
 } as const;
 
@@ -125,8 +136,22 @@ interface GeneratedImageData {
 
 class CloudflareApiService {
   private isUsingBackendProxy(): boolean {
-    // Check if backend proxy is available
-    // For GitHub Pages deployment, we need to use direct API calls
+    // Check if we're using any proxy (Worker proxy or local backend proxy)
+    // We use proxy when:
+    // 1. Worker proxy URL is configured (production/GitHub Pages)
+    // 2. Local development with backend proxy available
+
+    // If Worker proxy URL is configured, use it
+    if (import.meta.env.VITE_WORKER_PROXY_URL) {
+      return true;
+    }
+
+    // For local development, check if we have backend proxy
+    if (import.meta.env.DEV) {
+      return true; // Use local backend proxy
+    }
+
+    // For GitHub Pages without Worker URL, we'll still use Worker proxy with default URL
     const isGitHubPages =
       typeof window !== "undefined" &&
       (window.location.hostname.includes("github.io") ||
@@ -134,10 +159,10 @@ class CloudflareApiService {
         (typeof __GITHUB_PAGES__ !== "undefined" && __GITHUB_PAGES__));
 
     if (isGitHubPages) {
-      return false; // Use direct API calls for GitHub Pages
+      return true; // Use Worker proxy for GitHub Pages
     }
 
-    return true; // Use backend proxy for local development
+    return false; // Fallback to direct API calls (legacy)
   }
 
   private validateCredentials(): void {
