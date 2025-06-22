@@ -126,7 +126,19 @@ interface GeneratedImageData {
 class CloudflareApiService {
   private isUsingBackendProxy(): boolean {
     // Check if backend proxy is available
-    return true; // Always use backend proxy for security
+    // For GitHub Pages deployment, we need to use direct API calls
+    const isGitHubPages =
+      typeof window !== "undefined" &&
+      (window.location.hostname.includes("github.io") ||
+        import.meta.env.VITE_GITHUB_PAGES === "true" ||
+        // @ts-expect-error - defined in vite.config.ts
+        (typeof __GITHUB_PAGES__ !== "undefined" && __GITHUB_PAGES__));
+
+    if (isGitHubPages) {
+      return false; // Use direct API calls for GitHub Pages
+    }
+
+    return true; // Use backend proxy for local development
   }
 
   private validateCredentials(): void {

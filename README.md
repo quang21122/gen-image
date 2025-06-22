@@ -30,6 +30,34 @@ Before running the application, you need to set up your environment variables:
    npm run dev
    ```
 
+## Deployment
+
+This application can be deployed to GitHub Pages with automatic deployment via GitHub Actions.
+
+### Quick Deployment to GitHub Pages
+
+1. **Create a GitHub repository** and push your code
+2. **Enable GitHub Pages** in repository settings (Source: GitHub Actions)
+3. **Add repository secrets** for your Cloudflare credentials:
+   - `CLOUDFLARE_ACCOUNT_ID`
+   - `CLOUDFLARE_API_TOKEN`
+4. **Push to main branch** - automatic deployment will start
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+### Build Commands
+
+```bash
+# Build for production
+npm run build
+
+# Build for GitHub Pages
+npm run build:github-pages
+
+# Preview GitHub Pages build locally
+npm run preview:github-pages
+```
+
 ## Production Deployment
 
 For production deployment with maximum security:

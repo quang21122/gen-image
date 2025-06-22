@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Image Generator</title>
+  <script>
+    // GitHub Pages SPA redirect script
+    // This script takes the current URL and redirects to the index page
+    // with the path as a query parameter that can be handled by the SPA router
+    (function(l) {
+      if (l.search[1] === '/' ) {
+        var decoded = l.search.slice(1).split('&').map(function(s) { 
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    }(window.location))
+  </script>
+</head>
+<body>
+  <!-- GitHub Pages will serve this for any 404, and the script will redirect to the proper route -->
+  <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
+    <div style="text-align: center;">
+      <h1>Redirecting...</h1>
+      <p>If you are not redirected automatically, <a href="/gen-image/">click here</a>.</p>
+    </div>
+  </div>
+</body>
+</html>

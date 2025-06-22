@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:github-pages": "tsc -b && vite build --mode github-pages",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:github-pages": "vite preview --mode github-pages",
     "serve": "node server.cjs",
     "start": "npm run build && npm run serve",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "deploy:github-pages": "npm run build:github-pages"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
