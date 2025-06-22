@@ -167,7 +167,6 @@ function App() {
                 onDismiss={clearError}
                 onRetry={() => {
                   clearError();
-                  // You could implement retry logic here
                 }}
               />
             </div>
@@ -193,6 +192,7 @@ function App() {
             <ImageDisplay
               image={generatedImage}
               isLoading={isLoading}
+              progress={progress}
               onClear={clearImage}
               onDownload={downloadImage}
             />

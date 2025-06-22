@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { EnhancedLoading } from "@/components/ui/enhanced-loading";
+import { ImageGenerationLoader } from "@/components/ui/image-generation-loader";
 import {
   Download,
   Copy,
@@ -13,12 +14,13 @@ import {
   Palette,
   Info,
 } from "lucide-react";
-import type { ImageGenerationResponse } from "@/types";
+import type { ImageGenerationResponse, GenerationProgress } from "@/types";
 import { STYLE_OPTIONS } from "@/constants";
 
 interface ImageDisplayProps {
   image: ImageGenerationResponse | null;
   isLoading: boolean;
+  progress?: GenerationProgress;
   onClear?: () => void;
   onDownload?: (filename?: string) => Promise<void>;
 }
@@ -26,6 +28,7 @@ interface ImageDisplayProps {
 export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   image,
   isLoading,
+  progress,
   onClear,
   onDownload,
 }) => {
@@ -72,46 +75,9 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
   if (isLoading) {
     return (
-      <GlassCard variant="elevated" className="w-full p-6 animate-scale-in">
-        <div className="text-center space-y-4 mb-6">
-          <div className="flex items-center justify-center space-x-2">
-            <Sparkles className="h-6 w-6 text-primary-600 dark:text-primary-400 animate-pulse" />
-            <h3 className="text-xl font-semibold text-secondary-800 dark:text-secondary-200">
-              Creating Your Masterpiece
-            </h3>
-          </div>
-          <p className="text-secondary-600 dark:text-secondary-400">
-            Our AI is working its magic to bring your vision to life...
-          </p>
-        </div>
-
-        <div className="aspect-square w-full bg-gradient-to-br from-primary-50/50 to-accent-50/50 dark:from-secondary-800/50 dark:to-secondary-700/50 rounded-xl border border-white/30 dark:border-white/20 flex items-center justify-center relative overflow-hidden">
-          {/* Animated background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-primary-400/10 animate-gradient bg-[length:200%_200%]" />
-
-          <div className="relative text-center space-y-6">
-            <EnhancedLoading variant="pulse" size="lg" text="" />
-            <div className="space-y-2">
-              <p className="text-lg font-medium text-secondary-700 dark:text-secondary-300">
-                Generating...
-              </p>
-              <div className="flex items-center justify-center space-x-4 text-sm text-secondary-600 dark:text-secondary-400">
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-                  <span>Processing prompt</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div
-                    className="w-2 h-2 bg-accent-500 rounded-full animate-pulse"
-                    style={{ animationDelay: "0.5s" }}
-                  />
-                  <span>Creating image</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </GlassCard>
+      <div className="w-full animate-scale-in">
+        <ImageGenerationLoader progress={progress} className="w-full" />
+      </div>
     );
   }
 

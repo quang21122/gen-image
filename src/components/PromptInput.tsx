@@ -310,8 +310,16 @@ export const PromptInput: React.FC<PromptInputProps> = ({
           <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {isLoading ? (
             <div className="flex items-center">
-              <EnhancedLoading variant="dots" size="sm" className="mr-3" />
-              <span>Creating your masterpiece...</span>
+              <EnhancedLoading variant="cosmic" size="sm" className="mr-3" />
+              <span className="animate-pulse">
+                {progress?.stage === "translating" &&
+                  "Understanding your vision..."}
+                {progress?.stage === "generating" &&
+                  "Creating your masterpiece..."}
+                {progress?.stage === "saving" && "Finalizing artwork..."}
+                {progress?.stage === "complete" && "Almost ready!"}
+                {!progress && "Generating..."}
+              </span>
             </div>
           ) : (
             <div className="flex items-center">
