@@ -92,17 +92,17 @@ export const GENERATION_STAGES = {
 export const STEPS_OPTIONS = [
   {
     value: 10,
-    label: "Fast (10 steps)",
+    label: "Fast",
     description: "Quick generation, lower quality",
   },
   {
     value: 15,
-    label: "Good (15 steps)",
+    label: "Good",
     description: "Good quality, reasonable speed",
   },
   {
     value: 20,
-    label: "Maximum (20 steps)",
+    label: "Maximum",
     description: "Best quality available",
   },
 ] as const;

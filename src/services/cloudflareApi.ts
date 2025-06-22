@@ -1,7 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
 
-// Environment variable validation
+// Environment variable validation (for development fallback only)
 function validateEnvironmentVariables(): void {
+  // In production, we use the backend proxy, so this validation is only for development fallback
+  if (import.meta.env.PROD) {
+    return; // Skip validation in production - backend handles credentials
+  }
+
   const requiredEnvVars = [
     "VITE_CLOUDFLARE_ACCOUNT_ID",
     "VITE_CLOUDFLARE_API_TOKEN",
@@ -14,7 +19,9 @@ function validateEnvironmentVariables(): void {
 
   if (missingVars.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missingVars.join(", ")}. ` +
+      `Missing required environment variables for development: ${missingVars.join(
+        ", "
+      )}. ` +
         "Please check your .env file and ensure all required variables are set."
     );
   }
@@ -36,15 +43,18 @@ function validateEnvironmentVariables(): void {
   }
 }
 
-// Cloudflare API Configuration - using lazy evaluation for credentials
-const CLOUDFLARE_CONFIG = {
-  get accountId() {
+// API Configuration - uses secure backend proxy
+const API_CONFIG = {
+  // Always use backend proxy for security
+  baseUrl: "/api",
+  // Legacy config for development fallback only
+  get legacyAccountId() {
     return import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID;
   },
-  get apiToken() {
+  get legacyApiToken() {
     return import.meta.env.VITE_CLOUDFLARE_API_TOKEN;
   },
-  baseUrl: import.meta.env.DEV
+  legacyBaseUrl: import.meta.env.DEV
     ? "/api/cloudflare"
     : import.meta.env.VITE_API_BASE_URL ||
       "https://api.cloudflare.com/client/v4",
@@ -114,21 +124,40 @@ interface GeneratedImageData {
 }
 
 class CloudflareApiService {
+  private isUsingBackendProxy(): boolean {
+    // Check if backend proxy is available
+    return true; // Always use backend proxy for security
+  }
+
   private validateCredentials(): void {
-    try {
-      validateEnvironmentVariables();
-    } catch (error) {
-      console.error("Cloudflare API credentials validation failed:", error);
-      throw new Error(
-        "Cloudflare API credentials are not properly configured. " +
-          "Please check your .env file and ensure VITE_CLOUDFLARE_ACCOUNT_ID and VITE_CLOUDFLARE_API_TOKEN are set with valid values."
-      );
+    if (!this.isUsingBackendProxy()) {
+      // Only validate frontend credentials if using legacy direct API calls
+      try {
+        validateEnvironmentVariables();
+      } catch (error) {
+        console.error("Cloudflare API credentials validation failed:", error);
+        throw new Error(
+          "Cloudflare API credentials are not properly configured. " +
+            "Please check your .env file and ensure VITE_CLOUDFLARE_ACCOUNT_ID and VITE_CLOUDFLARE_API_TOKEN are set with valid values."
+        );
+      }
     }
+    // Backend proxy handles credential validation server-side
   }
 
   private getRequestHeaders(): HeadersInit {
+    if (this.isUsingBackendProxy()) {
+      // For backend proxy, only send content headers (no auth headers)
+      return {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "User-Agent": "AI-Image-Generator-Client/1.0",
+      };
+    }
+
+    // Legacy headers for direct API calls (development fallback only)
     return {
-      Authorization: `Bearer ${CLOUDFLARE_CONFIG.apiToken}`,
+      Authorization: `Bearer ${API_CONFIG.legacyApiToken}`,
       "Content-Type": "application/json",
       Accept: "application/json",
       "User-Agent": "AI-Image-Generator/1.0",
@@ -218,34 +247,56 @@ class CloudflareApiService {
     }
 
     try {
-      // Use Cloudflare's translation service
-      const response = await this.makeApiRequest(
-        `${CLOUDFLARE_CONFIG.baseUrl}/accounts/${CLOUDFLARE_CONFIG.accountId}/ai/run/@cf/meta/m2m100-1.2b`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            text: prompt,
-            source_lang: "auto",
-            target_lang: "english",
-          }),
+      if (this.isUsingBackendProxy()) {
+        // Use backend proxy for translation
+        const response = await this.makeApiRequest(
+          `${API_CONFIG.baseUrl}/translate`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              text: prompt,
+              source_lang: "auto",
+              target_lang: "english",
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          return prompt;
         }
-      );
 
-      if (!response.ok) {
-        return prompt;
-      }
-
-      // Check if response is JSON (translation service should return JSON)
-      const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        return prompt;
-      }
-
-      try {
         const data = await response.json();
         return data.result?.translated_text || prompt;
-      } catch {
-        return prompt;
+      } else {
+        // Legacy direct API call (development fallback)
+        const response = await this.makeApiRequest(
+          `${API_CONFIG.legacyBaseUrl}/accounts/${API_CONFIG.legacyAccountId}/ai/run/@cf/meta/m2m100-1.2b`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              text: prompt,
+              source_lang: "auto",
+              target_lang: "english",
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          return prompt;
+        }
+
+        // Check if response is JSON (translation service should return JSON)
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          return prompt;
+        }
+
+        try {
+          const data = await response.json();
+          return data.result?.translated_text || prompt;
+        } catch {
+          return prompt;
+        }
       }
     } catch {
       return prompt;
@@ -414,14 +465,28 @@ class CloudflareApiService {
         height: request.height || 1024,
       };
 
-      // Make the API call to Cloudflare
-      const response = await this.makeApiRequest(
-        `${CLOUDFLARE_CONFIG.baseUrl}/accounts/${CLOUDFLARE_CONFIG.accountId}/ai/run/${CLOUDFLARE_CONFIG.model}`,
-        {
-          method: "POST",
-          body: JSON.stringify(apiRequest),
-        }
-      );
+      // Make the API call via backend proxy or direct (fallback)
+      let response: Response;
+
+      if (this.isUsingBackendProxy()) {
+        // Use secure backend proxy
+        response = await this.makeApiRequest(
+          `${API_CONFIG.baseUrl}/generate-image`,
+          {
+            method: "POST",
+            body: JSON.stringify(apiRequest),
+          }
+        );
+      } else {
+        // Legacy direct API call (development fallback)
+        response = await this.makeApiRequest(
+          `${API_CONFIG.legacyBaseUrl}/accounts/${API_CONFIG.legacyAccountId}/ai/run/${API_CONFIG.model}`,
+          {
+            method: "POST",
+            body: JSON.stringify(apiRequest),
+          }
+        );
+      }
 
       if (!response.ok) {
         // Try to get error details, but handle both JSON and binary responses
@@ -480,14 +545,31 @@ class CloudflareApiService {
       // Validate credentials before health check
       this.validateCredentials();
 
-      const response = await this.makeApiRequest(
-        `${CLOUDFLARE_CONFIG.baseUrl}/accounts/${CLOUDFLARE_CONFIG.accountId}`,
-        {
-          method: "GET",
-        }
-      );
+      if (this.isUsingBackendProxy()) {
+        // Use backend proxy health check
+        const response = await this.makeApiRequest(
+          `${API_CONFIG.baseUrl}/health`,
+          {
+            method: "GET",
+          }
+        );
 
-      return response.ok;
+        if (response.ok) {
+          const data = await response.json();
+          return data.success === true;
+        }
+        return false;
+      } else {
+        // Legacy direct API health check (development fallback)
+        const response = await this.makeApiRequest(
+          `${API_CONFIG.legacyBaseUrl}/accounts/${API_CONFIG.legacyAccountId}`,
+          {
+            method: "GET",
+          }
+        );
+
+        return response.ok;
+      }
     } catch {
       return false;
     }

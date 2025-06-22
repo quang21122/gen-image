@@ -7,9 +7,7 @@ import {
   CheckCircle,
   Sparkles,
   Zap,
-  Palette,
   Stars,
-  Wand2,
 } from "lucide-react";
 import type { GenerationProgress } from "@/types";
 

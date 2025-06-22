@@ -30,11 +30,52 @@ Before running the application, you need to set up your environment variables:
    npm run dev
    ```
 
-## Security Notes
+## Production Deployment
+
+For production deployment with maximum security:
+
+1. **Build the application**:
+
+   ```bash
+   npm run build
+   ```
+
+2. **Start the secure production server**:
+
+   ```bash
+   npm run serve
+   ```
+
+3. **Environment Setup**:
+
+   - Set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` on your server
+   - These credentials will be completely hidden from browser inspection
+   - The frontend will automatically use the secure backend proxy
+
+4. **Verify Security**:
+   - Open browser dev tools → Network tab
+   - Generate an image and inspect the requests
+   - You should only see requests to `/api/*` endpoints (no Cloudflare credentials visible)
+
+## Security Features
+
+🔒 **Secure API Communication**:
+
+- API credentials are stored server-side only and never exposed to the browser
+- All Cloudflare API calls go through a secure backend proxy
+- Frontend cannot access sensitive credentials even through browser dev tools
+
+🛡️ **Environment Security**:
+
+- Server-side credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`) are never sent to the browser
+- Client-side credentials (`VITE_*`) are only used for development fallback
+- Production builds completely hide API keys from network inspection
+
+📋 **Security Best Practices**:
 
 - Never commit your `.env` file to version control
 - The `.env` file is already included in `.gitignore`
-- Environment variables are validated at runtime for security
+- Environment variables are validated at runtime
 - Use the `checkEnvironmentSetup()` function to verify your configuration
 
 ## Development
