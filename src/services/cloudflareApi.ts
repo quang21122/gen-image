@@ -66,13 +66,18 @@ const API_CONFIG = {
 
   // Check if Worker proxy is properly configured
   get isWorkerConfigured() {
-    try {
-      // Try to get the base URL - if it throws, Worker is not configured
-      const url = this.baseUrl;
-      return !!url;
-    } catch {
-      return false;
+    // Check if Worker proxy URL is configured directly without calling baseUrl
+    // to avoid recursive calls
+    if (import.meta.env.VITE_WORKER_PROXY_URL) {
+      return true;
     }
+
+    // For local development, always consider it configured
+    if (import.meta.env.DEV) {
+      return true;
+    }
+
+    return false;
   },
   // Legacy config for development fallback only (deprecated)
   get legacyAccountId() {
