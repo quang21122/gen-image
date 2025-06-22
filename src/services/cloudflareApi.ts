@@ -192,26 +192,17 @@ class CloudflareApiService {
 
   private getRequestHeaders(): HeadersInit {
     if (this.isUsingBackendProxy()) {
-      // For backend proxy, only send content headers (no auth headers)
+      // For backend proxy, only send essential content headers (no auth headers)
       return {
         "Content-Type": "application/json",
-        Accept: "application/json",
-        "User-Agent": "AI-Image-Generator-Client/1.0",
       };
     }
 
-    // Legacy headers for direct API calls (development fallback only)
+    // For direct API calls (GitHub Pages deployment), only send essential headers
+    // This minimizes browser-specific headers that can cause CORS issues
     return {
       Authorization: `Bearer ${API_CONFIG.legacyApiToken}`,
       "Content-Type": "application/json",
-      Accept: "application/json",
-      "User-Agent": "AI-Image-Generator/1.0",
-      // Add CORS headers for development
-      ...(import.meta.env.DEV && {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      }),
     };
   }
 
@@ -223,16 +214,32 @@ class CloudflareApiService {
     const maxRetries = 3;
 
     try {
+      // Create a clean headers object with only essential headers
+      const cleanHeaders: HeadersInit = {
+        ...this.getRequestHeaders(),
+        ...options.headers,
+      };
+
+      // Debug logging for GitHub Pages to verify headers
+      if (
+        typeof window !== "undefined" &&
+        window.location.hostname.includes("github.io")
+      ) {
+        console.debug(
+          "Cloudflare API Request Headers:",
+          Object.keys(cleanHeaders)
+        );
+      }
+
       const response = await fetch(url, {
         ...options,
-        headers: {
-          ...this.getRequestHeaders(),
-          ...options.headers,
-        },
-        // Add credentials and mode for CORS
+        headers: cleanHeaders,
+        // Minimal fetch configuration to avoid browser-specific headers
         mode: "cors",
         credentials: "omit", // Don't send cookies for security
-        // Add timeout for better error handling
+        cache: "no-cache", // Prevent caching issues
+        redirect: "follow", // Handle redirects properly
+        // Keep timeout for better error handling
         signal: AbortSignal.timeout(30000), // 30 second timeout
       });
 
@@ -623,6 +630,41 @@ class CloudflareApiService {
 
 // Export singleton instance
 export const cloudflareApi = new CloudflareApiService();
+
+// Utility function to test API headers (for debugging)
+export function testApiHeaders(): {
+  backendProxyHeaders: HeadersInit;
+  directApiHeaders: HeadersInit;
+  isUsingBackendProxy: boolean;
+} {
+  // Create a test service instance
+  const service = new CloudflareApiService();
+
+  // Access private methods through type assertion with proper interface
+  interface TestableService {
+    getRequestHeaders(): HeadersInit;
+    isUsingBackendProxy(): boolean;
+  }
+
+  const testableService = service as unknown as TestableService;
+
+  // Test backend proxy headers (current state)
+  const backendProxyHeaders = testableService.getRequestHeaders();
+  const isUsingBackendProxy = testableService.isUsingBackendProxy();
+
+  // For direct API headers, we'll simulate the headers manually
+  // since we can't easily override the private method
+  const directApiHeaders: HeadersInit = {
+    Authorization: `Bearer ${API_CONFIG.legacyApiToken}`,
+    "Content-Type": "application/json",
+  };
+
+  return {
+    backendProxyHeaders,
+    directApiHeaders,
+    isUsingBackendProxy,
+  };
+}
 
 // Utility function to check environment setup
 export function checkEnvironmentSetup(): {
