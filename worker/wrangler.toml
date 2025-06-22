@@ -1,0 +1,21 @@
+name = "gen-image-worker"
+main = "src/index.ts"
+compatibility_date = "2024-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+# Development environment
+[env.development]
+name = "gen-image-worker-dev"
+
+# Production environment
+[env.production]
+name = "gen-image-worker"
+
+# Environment variables (set via wrangler secret put)
+# CLOUDFLARE_ACCOUNT_ID - Your Cloudflare account ID
+# CLOUDFLARE_API_TOKEN - Your Cloudflare API token with AI permissions
+
+# CORS configuration for your GitHub Pages domain
+# Update this with your actual GitHub Pages URL
+[vars]
+ALLOWED_ORIGINS = "https://quang21122.github.io,http://localhost:5173,http://localhost:3000"

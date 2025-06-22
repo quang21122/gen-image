@@ -44,11 +44,10 @@ jobs:
         run: npm run build:github-pages
         env:
           GITHUB_PAGES: true
-          # Pass Cloudflare credentials from repository secrets to build environment
-          # These will be embedded in the client build for GitHub Pages deployment
-          # Repository secrets should be named: CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN
-          VITE_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          VITE_CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Use Cloudflare Worker proxy for secure API access (no credentials in client)
+          # Set WORKER_PROXY_URL as a repository secret with your deployed Worker URL
+          # Example: https://gen-image-worker.your-subdomain.workers.dev
+          VITE_WORKER_PROXY_URL: ${{ secrets.WORKER_PROXY_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
