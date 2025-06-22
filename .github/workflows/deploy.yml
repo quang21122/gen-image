@@ -40,14 +40,32 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Check Worker Configuration
+        id: check-worker
+        run: |
+          if [ -z "${{ secrets.WORKER_PROXY_URL }}" ]; then
+            echo "⚠️  WARNING: WORKER_PROXY_URL secret is not set!"
+            echo "worker_configured=false" >> $GITHUB_OUTPUT
+            echo "🔧 To fix this:"
+            echo "1. Deploy your Cloudflare Worker first (see DEPLOYMENT.md)"
+            echo "2. Add WORKER_PROXY_URL as a repository secret"
+            echo "3. Re-run this deployment"
+            echo ""
+            echo "📖 For detailed instructions, see: https://github.com/${{ github.repository }}/blob/main/DEPLOYMENT.md"
+          else
+            echo "✅ Worker proxy URL is configured"
+            echo "worker_configured=true" >> $GITHUB_OUTPUT
+            echo "Using Worker URL: ${{ secrets.WORKER_PROXY_URL }}"
+          fi
+
       - name: Build with Vite
         run: npm run build:github-pages
         env:
           GITHUB_PAGES: true
           # Use Cloudflare Worker proxy for secure API access (no credentials in client)
-          # Set WORKER_PROXY_URL as a repository secret with your deployed Worker URL
-          # Example: https://gen-image-worker.your-subdomain.workers.dev
+          # Only set if the secret exists, otherwise let the app handle the missing configuration
           VITE_WORKER_PROXY_URL: ${{ secrets.WORKER_PROXY_URL }}
+          VITE_WORKER_CONFIGURED: ${{ steps.check-worker.outputs.worker_configured }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -57,8 +57,22 @@ const API_CONFIG = {
       return "/api";
     }
 
-    // Fallback for GitHub Pages without Worker URL configured
-    return "https://gen-image-worker.your-subdomain.workers.dev";
+    // For GitHub Pages without Worker URL configured, throw an error
+    // This prevents trying to connect to a non-existent placeholder URL
+    throw new Error(
+      "Worker proxy URL not configured. Please deploy your Cloudflare Worker and set WORKER_PROXY_URL repository secret. See DEPLOYMENT.md for instructions."
+    );
+  },
+
+  // Check if Worker proxy is properly configured
+  get isWorkerConfigured() {
+    try {
+      // Try to get the base URL - if it throws, Worker is not configured
+      const url = this.baseUrl;
+      return !!url;
+    } catch {
+      return false;
+    }
   },
   // Legacy config for development fallback only (deprecated)
   get legacyAccountId() {
@@ -141,17 +155,17 @@ class CloudflareApiService {
     // 1. Worker proxy URL is configured (production/GitHub Pages)
     // 2. Local development with backend proxy available
 
-    // If Worker proxy URL is configured, use it
-    if (import.meta.env.VITE_WORKER_PROXY_URL) {
-      return true;
-    }
-
-    // For local development, check if we have backend proxy
+    // For local development, use local backend proxy
     if (import.meta.env.DEV) {
       return true; // Use local backend proxy
     }
 
-    // For GitHub Pages without Worker URL, we'll still use Worker proxy with default URL
+    // For production, check if Worker proxy is configured
+    if (API_CONFIG.isWorkerConfigured) {
+      return true; // Use Worker proxy
+    }
+
+    // If we're on GitHub Pages but Worker is not configured, we need to show an error
     const isGitHubPages =
       typeof window !== "undefined" &&
       (window.location.hostname.includes("github.io") ||
@@ -159,52 +173,62 @@ class CloudflareApiService {
         (typeof __GITHUB_PAGES__ !== "undefined" && __GITHUB_PAGES__));
 
     if (isGitHubPages) {
-      return true; // Use Worker proxy for GitHub Pages
+      // On GitHub Pages but Worker not configured - this will cause an error in validateCredentials
+      return true; // Try to use Worker proxy (will fail with helpful error)
     }
 
     return false; // Fallback to direct API calls (legacy)
   }
 
   private validateCredentials(): void {
-    if (!this.isUsingBackendProxy()) {
+    if (this.isUsingBackendProxy()) {
+      // Check if Worker proxy is properly configured
+      if (!API_CONFIG.isWorkerConfigured) {
+        const isGitHubPages =
+          typeof window !== "undefined" &&
+          (window.location.hostname.includes("github.io") ||
+            import.meta.env.VITE_GITHUB_PAGES === "true" ||
+            (typeof __GITHUB_PAGES__ !== "undefined" && __GITHUB_PAGES__));
+
+        if (isGitHubPages) {
+          console.error("🚫 Worker Proxy Configuration Error:");
+          console.error(
+            "- VITE_WORKER_PROXY_URL:",
+            import.meta.env.VITE_WORKER_PROXY_URL || "✗ Missing"
+          );
+          console.error(
+            "- VITE_WORKER_CONFIGURED:",
+            import.meta.env.VITE_WORKER_CONFIGURED || "false"
+          );
+          console.error("");
+          console.error("🔧 To fix this issue:");
+          console.error("1. Deploy your Cloudflare Worker (see DEPLOYMENT.md)");
+          console.error("2. Add WORKER_PROXY_URL as a repository secret");
+          console.error("3. Re-deploy your GitHub Pages application");
+          console.error("");
+          console.error("📖 For detailed instructions, see:");
+          console.error(
+            "https://github.com/" +
+              window.location.pathname.split("/")[1] +
+              "/blob/main/DEPLOYMENT.md"
+          );
+
+          throw new Error(
+            "Worker proxy not configured. Please deploy your Cloudflare Worker and set WORKER_PROXY_URL repository secret. See DEPLOYMENT.md for detailed instructions."
+          );
+        }
+
+        throw new Error(
+          "Worker proxy URL not configured. Please check your environment configuration."
+        );
+      }
+      // Worker proxy handles credential validation server-side
+    } else {
       // Only validate frontend credentials if using legacy direct API calls
       try {
         validateEnvironmentVariables();
       } catch (error) {
         console.error("Cloudflare API credentials validation failed:", error);
-
-        // Debug information for GitHub Pages deployment
-        if (
-          typeof window !== "undefined" &&
-          window.location.hostname.includes("github.io")
-        ) {
-          console.error("GitHub Pages Debug Info:");
-          console.error(
-            "- VITE_CLOUDFLARE_ACCOUNT_ID:",
-            import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID
-              ? "✓ Present"
-              : "✗ Missing"
-          );
-          console.error(
-            "- VITE_CLOUDFLARE_API_TOKEN:",
-            import.meta.env.VITE_CLOUDFLARE_API_TOKEN
-              ? "✓ Present"
-              : "✗ Missing"
-          );
-          console.error(
-            "- VITE_GITHUB_PAGES:",
-            import.meta.env.VITE_GITHUB_PAGES
-          );
-          console.error(
-            "- __GITHUB_PAGES__:",
-            typeof __GITHUB_PAGES__ !== "undefined"
-              ? __GITHUB_PAGES__
-              : "undefined"
-          );
-          console.error(
-            "Please check that repository secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are properly configured in GitHub Settings > Secrets and variables > Actions"
-          );
-        }
 
         throw new Error(
           "Cloudflare API credentials are not properly configured. " +
@@ -212,7 +236,6 @@ class CloudflareApiService {
         );
       }
     }
-    // Backend proxy handles credential validation server-side
   }
 
   private getRequestHeaders(): HeadersInit {
