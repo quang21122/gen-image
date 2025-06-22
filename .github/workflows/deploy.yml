@@ -27,26 +27,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        
+
       - name: Build with Vite
         run: npm run build:github-pages
         env:
           GITHUB_PAGES: true
-          # Note: For security, we don't expose Cloudflare credentials to the client build
-          # The application will need to handle the lack of backend API gracefully
-          
+          # Pass Cloudflare credentials from repository secrets to build environment
+          # These will be embedded in the client build for GitHub Pages deployment
+          # Repository secrets should be named: CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN
+          VITE_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

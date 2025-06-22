@@ -147,6 +147,40 @@ class CloudflareApiService {
         validateEnvironmentVariables();
       } catch (error) {
         console.error("Cloudflare API credentials validation failed:", error);
+
+        // Debug information for GitHub Pages deployment
+        if (
+          typeof window !== "undefined" &&
+          window.location.hostname.includes("github.io")
+        ) {
+          console.error("GitHub Pages Debug Info:");
+          console.error(
+            "- VITE_CLOUDFLARE_ACCOUNT_ID:",
+            import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID
+              ? "✓ Present"
+              : "✗ Missing"
+          );
+          console.error(
+            "- VITE_CLOUDFLARE_API_TOKEN:",
+            import.meta.env.VITE_CLOUDFLARE_API_TOKEN
+              ? "✓ Present"
+              : "✗ Missing"
+          );
+          console.error(
+            "- VITE_GITHUB_PAGES:",
+            import.meta.env.VITE_GITHUB_PAGES
+          );
+          console.error(
+            "- __GITHUB_PAGES__:",
+            typeof __GITHUB_PAGES__ !== "undefined"
+              ? __GITHUB_PAGES__
+              : "undefined"
+          );
+          console.error(
+            "Please check that repository secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are properly configured in GitHub Settings > Secrets and variables > Actions"
+          );
+        }
+
         throw new Error(
           "Cloudflare API credentials are not properly configured. " +
             "Please check your .env file and ensure VITE_CLOUDFLARE_ACCOUNT_ID and VITE_CLOUDFLARE_API_TOKEN are set with valid values."
