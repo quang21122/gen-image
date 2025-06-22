@@ -10,32 +10,52 @@ import {
   Sparkles,
   Heart,
   Share2,
+  Palette,
+  Info,
 } from "lucide-react";
 import type { ImageGenerationResponse } from "@/types";
+import { STYLE_OPTIONS } from "@/constants";
 
 interface ImageDisplayProps {
   image: ImageGenerationResponse | null;
   isLoading: boolean;
   onClear?: () => void;
+  onDownload?: (filename?: string) => Promise<void>;
 }
 
 export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   image,
   isLoading,
   onClear,
+  onDownload,
 }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!image) return;
 
-    const link = document.createElement("a");
-    link.href = image.url;
-    link.download = `ai-generated-${image.id}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      setIsDownloading(true);
+
+      if (onDownload) {
+        // Use the enhanced download function from the hook
+        await onDownload(`ai-generated-${image.id}.png`);
+      } else {
+        // Fallback to simple download
+        const link = document.createElement("a");
+        link.href = image.url;
+        link.download = `ai-generated-${image.id}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleCopyUrl = async () => {
@@ -179,10 +199,11 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white/20 dark:bg-white/10 rounded-lg p-4 border border-white/30 dark:border-white/20">
+          {/* Prompt and Style Information */}
+          <div className="bg-white/20 dark:bg-white/10 rounded-lg p-4 border border-white/30 dark:border-white/20 space-y-3">
             <div className="flex items-start space-x-2">
               <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-secondary-800 dark:text-secondary-200 mb-1">
                   Prompt:
                 </p>
@@ -191,12 +212,43 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
                 </p>
               </div>
             </div>
+
+            {/* Style Information */}
+            {image.style && image.style !== "none" && (
+              <div className="flex items-start space-x-2 pt-2 border-t border-white/20 dark:border-white/10">
+                <Palette className="h-4 w-4 text-accent-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-secondary-800 dark:text-secondary-200 mb-1">
+                    Style:
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-secondary-700 dark:text-secondary-300">
+                      {STYLE_OPTIONS.find((s) => s.id === image.style)?.name ||
+                        image.style}
+                    </span>
+                    <span className="text-xs px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded-full">
+                      {STYLE_OPTIONS.find((s) => s.id === image.style)
+                        ?.example || "Styled"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Metadata */}
           <div className="flex items-center justify-between text-xs text-secondary-600 dark:text-secondary-400">
-            <span>
-              Generated on {new Date(image.created_at).toLocaleString()}
-            </span>
+            <div className="flex items-center space-x-3">
+              <span>
+                Generated on {new Date(image.created_at).toLocaleString()}
+              </span>
+              {image.filename && (
+                <div className="flex items-center space-x-1">
+                  <Info className="h-3 w-3" />
+                  <span>{image.filename}</span>
+                </div>
+              )}
+            </div>
             <div className="flex items-center space-x-1">
               <Heart className="h-3 w-3" />
               <span>AI Created</span>
@@ -209,10 +261,15 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
             variant="outline"
             size="sm"
             onClick={handleDownload}
-            className="bg-white/10 dark:bg-white/5 border-white/30 dark:border-white/20 hover:bg-white/20 dark:hover:bg-white/10 text-secondary-700 dark:text-secondary-300"
+            disabled={isDownloading}
+            className="bg-white/10 dark:bg-white/5 border-white/30 dark:border-white/20 hover:bg-white/20 dark:hover:bg-white/10 text-secondary-700 dark:text-secondary-300 disabled:opacity-50"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Download
+            {isDownloading ? (
+              <EnhancedLoading variant="dots" size="sm" className="mr-2" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
+            {isDownloading ? "Downloading..." : "Download"}
           </Button>
           <Button
             variant="outline"
