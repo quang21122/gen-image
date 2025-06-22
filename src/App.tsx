@@ -2,11 +2,9 @@ import { PromptInput } from "@/components/PromptInput";
 import { ImageDisplay } from "@/components/ImageDisplay";
 import { ErrorDisplay } from "@/components/ErrorDisplay";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ImageDebugPanel } from "@/components/ImageDebugPanel";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Sparkles, Zap, Stars, Palette, ExternalLink, Bug } from "lucide-react";
-import { useState } from "react";
+import { Sparkles, Zap, Stars, Palette, ExternalLink } from "lucide-react";
 import type { ImageGenerationRequest } from "@/types";
 
 function App() {
@@ -22,7 +20,6 @@ function App() {
   } = useImageGeneration();
 
   const { theme, resolvedTheme } = useTheme();
-  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
 
   const handleGenerate = async (request: ImageGenerationRequest) => {
     try {
@@ -112,13 +109,6 @@ function App() {
               <div className="hidden sm:block text-xs text-secondary-600 dark:text-secondary-400 bg-white/10 dark:bg-white/5 px-2 py-1 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm">
                 {theme === "system" ? `System (${resolvedTheme})` : theme}
               </div>
-              <button
-                onClick={() => setIsDebugPanelOpen(true)}
-                className="p-2 bg-white/10 dark:bg-white/5 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 group"
-                title="Open Debug Panel"
-              >
-                <Bug className="h-4 w-4 text-secondary-600 dark:text-secondary-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300" />
-              </button>
               <ThemeToggle />
             </div>
           </div>
@@ -231,12 +221,6 @@ function App() {
           </div>
         </div>
       </footer>
-
-      {/* Debug Panel */}
-      <ImageDebugPanel
-        isOpen={isDebugPanelOpen}
-        onClose={() => setIsDebugPanelOpen(false)}
-      />
     </div>
   );
 }
