@@ -3,7 +3,8 @@ import { ImageDisplay } from "@/components/ImageDisplay";
 import { ErrorDisplay } from "@/components/ErrorDisplay";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
-import { Sparkles, Zap, Stars, Palette } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Sparkles, Zap, Stars, Palette, ExternalLink } from "lucide-react";
 
 function App() {
   const {
@@ -15,6 +16,8 @@ function App() {
     clearImage,
   } = useImageGeneration();
 
+  const { theme, resolvedTheme } = useTheme();
+
   const handleGenerate = async (prompt: string) => {
     try {
       await generateImage({ prompt });
@@ -25,46 +28,54 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-secondary-900 dark:via-secondary-800 dark:to-secondary-900 transition-colors duration-500 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-main relative overflow-hidden">
       {/* Enhanced Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Primary floating orbs */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-electric-400/30 to-cosmic-400/30 rounded-full blur-3xl animate-float float-animation" />
+        {/* Primary floating orbs - theme aware */}
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 dark:from-blue-400/40 dark:to-purple-400/40 rounded-full blur-3xl animate-float float-animation transition-all duration-500" />
         <div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-neon-400/25 to-sunset-400/25 rounded-full blur-3xl animate-float float-animation"
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-emerald-400/15 to-orange-400/15 dark:from-emerald-400/35 dark:to-orange-400/35 rounded-full blur-3xl animate-float float-animation transition-all duration-500"
           style={{ animationDelay: "2s" }}
         />
         <div
-          className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-accent-400/20 to-primary-400/20 rounded-full blur-2xl animate-float float-animation"
+          className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-accent-400/15 to-primary-400/15 dark:from-accent-400/30 dark:to-primary-400/30 rounded-full blur-2xl animate-float float-animation transition-all duration-500"
           style={{ animationDelay: "4s" }}
         />
 
-        {/* Central cosmic gradient */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-radial from-primary-300/15 via-accent-300/10 to-transparent rounded-full blur-2xl animate-pulse-slow" />
+        {/* Central cosmic gradient - theme aware */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-radial from-primary-300/10 via-accent-300/5 to-transparent dark:from-primary-300/20 dark:via-accent-300/15 dark:to-transparent rounded-full blur-2xl animate-pulse-slow transition-all duration-500" />
 
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-mesh-gradient opacity-5 dark:opacity-10 animate-gradient-shift" />
+        {/* Mesh gradient overlay - theme aware */}
+        <div className="absolute inset-0 bg-mesh-gradient opacity-3 dark:opacity-8 animate-gradient-shift transition-all duration-500" />
 
-        {/* Subtle particle effects */}
-        <div className="absolute top-20 left-20 w-2 h-2 bg-primary-400 rounded-full animate-pulse opacity-60" />
+        {/* Enhanced theme-aware particle effects */}
+        <div className="absolute top-20 left-20 w-2 h-2 bg-primary-400 dark:bg-primary-300 rounded-full animate-pulse opacity-60 dark:opacity-80 transition-all duration-500" />
         <div
-          className="absolute top-40 right-32 w-1 h-1 bg-accent-400 rounded-full animate-pulse opacity-40"
+          className="absolute top-40 right-32 w-1 h-1 bg-accent-400 dark:bg-accent-300 rounded-full animate-pulse opacity-40 dark:opacity-60 transition-all duration-500"
           style={{ animationDelay: "1s" }}
         />
         <div
-          className="absolute bottom-32 left-1/3 w-1.5 h-1.5 bg-electric-400 rounded-full animate-pulse opacity-50"
+          className="absolute bottom-32 left-1/3 w-1.5 h-1.5 bg-blue-400 dark:bg-blue-300 rounded-full animate-pulse opacity-50 dark:opacity-70 transition-all duration-500"
           style={{ animationDelay: "2.5s" }}
         />
         <div
-          className="absolute bottom-20 right-20 w-1 h-1 bg-neon-400 rounded-full animate-pulse opacity-30"
+          className="absolute bottom-20 right-20 w-1 h-1 bg-emerald-400 dark:bg-emerald-300 rounded-full animate-pulse opacity-30 dark:opacity-50 transition-all duration-500"
           style={{ animationDelay: "3.5s" }}
+        />
+        <div
+          className="absolute top-1/2 left-10 w-1 h-1 bg-purple-400 dark:bg-purple-300 rounded-full animate-pulse opacity-25 dark:opacity-45 transition-all duration-500"
+          style={{ animationDelay: "4.5s" }}
+        />
+        <div
+          className="absolute top-3/4 right-1/4 w-0.5 h-0.5 bg-pink-400 dark:bg-pink-300 rounded-full animate-pulse opacity-35 dark:opacity-55 transition-all duration-500"
+          style={{ animationDelay: "5.5s" }}
         />
       </div>
 
       {/* Enhanced Header */}
       <header className="relative border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/5 backdrop-blur-md backdrop-saturate">
         {/* Header gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-accent-500/5 to-electric-500/5 dark:from-primary-400/10 dark:via-accent-400/10 dark:to-electric-400/10" />
+        <div className="absolute inset-0 bg-gradient-header" />
 
         <div className="container mx-auto px-4 py-8 relative">
           <div className="flex items-center justify-between">
@@ -72,7 +83,7 @@ function App() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-accent-400 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
                 <div className="relative bg-white/10 dark:bg-white/5 p-3 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm">
-                  <Sparkles className="h-8 w-8 text-primary-600 dark:text-primary-400 animate-pulse-glow" />
+                  <Sparkles className="h-8 w-8 text-primary-600 dark:text-primary-400 animate-pulse-glow transition-colors duration-300" />
                 </div>
                 <div className="absolute inset-0 h-14 w-14 text-primary-400/30 animate-ping">
                   <Sparkles className="h-14 w-14" />
@@ -84,7 +95,7 @@ function App() {
                 </h1>
                 <div className="flex items-center space-x-2 mt-4">
                   <div className="flex items-center space-x-1 px-3 py-1 bg-white/10 dark:bg-white/5 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm">
-                    <Zap className="h-4 w-4 text-electric-500 animate-pulse" />
+                    <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-pulse transition-colors duration-300" />
                     <span className="text-sm font-medium text-secondary-700 dark:text-secondary-300">
                       Powered by Advanced AI
                     </span>
@@ -92,7 +103,10 @@ function App() {
                 </div>
               </div>
             </div>
-            <div className="animate-slide-in-right">
+            <div className="animate-slide-in-right flex items-center space-x-3">
+              <div className="hidden sm:block text-xs text-secondary-600 dark:text-secondary-400 bg-white/10 dark:bg-white/5 px-2 py-1 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm">
+                {theme === "system" ? `System (${resolvedTheme})` : theme}
+              </div>
               <ThemeToggle />
             </div>
           </div>
@@ -103,7 +117,7 @@ function App() {
             <div className="flex items-center justify-center space-x-8 text-sm">
               <div className="group flex items-center space-x-2 px-4 py-2 bg-white/10 dark:bg-white/5 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 interactive-scale">
                 <div className="p-1 bg-gradient-to-r from-primary-400 to-electric-400 rounded-full">
-                  <Stars className="h-3 w-3 text-white" />
+                  <Stars className="h-3 w-3 text-slate-800 dark:text-white transition-colors duration-300" />
                 </div>
                 <span className="font-medium text-secondary-700 dark:text-secondary-300">
                   High Quality
@@ -111,7 +125,7 @@ function App() {
               </div>
               <div className="group flex items-center space-x-2 px-4 py-2 bg-white/10 dark:bg-white/5 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 interactive-scale">
                 <div className="p-1 bg-gradient-to-r from-electric-400 to-neon-400 rounded-full">
-                  <Zap className="h-3 w-3 text-white" />
+                  <Zap className="h-3 w-3 text-slate-800 dark:text-white transition-colors duration-300" />
                 </div>
                 <span className="font-medium text-secondary-700 dark:text-secondary-300">
                   Fast Generation
@@ -119,7 +133,7 @@ function App() {
               </div>
               <div className="group flex items-center space-x-2 px-4 py-2 bg-white/10 dark:bg-white/5 rounded-full border border-white/20 dark:border-white/10 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300 interactive-scale">
                 <div className="p-1 bg-gradient-to-r from-accent-400 to-cosmic-400 rounded-full">
-                  <Palette className="h-3 w-3 text-white" />
+                  <Palette className="h-3 w-3 text-slate-800 dark:text-white transition-colors duration-300" />
                 </div>
                 <span className="font-medium text-secondary-700 dark:text-secondary-300">
                   Creative Freedom
@@ -170,11 +184,13 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="relative border-t border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/5 backdrop-blur-sm mt-16">
-        <div className="container mx-auto px-4 py-8">
+      <footer className="relative border-t border-white/20 dark:border-white/10 backdrop-blur-sm mt-16">
+        {/* Footer gradient background */}
+        <div className="absolute inset-0 bg-gradient-footer" />
+        <div className="container mx-auto px-4 py-8 relative">
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center space-x-2">
-              <Sparkles className="h-5 w-5 text-primary-500" />
+              <Sparkles className="h-5 w-5 text-primary-600 dark:text-primary-400 transition-colors duration-300" />
               <span className="text-sm font-medium text-secondary-700 dark:text-secondary-300">
                 AI Image Generator
               </span>
@@ -183,9 +199,17 @@ function App() {
               Built with React, TypeScript, and Tailwind CSS
             </p>
             <div className="flex items-center justify-center space-x-4 text-xs text-secondary-500 dark:text-secondary-500">
-              <span>© 2024 AI Image Generator</span>
+              <span>© 2025 AI Image Generator</span>
               <span>•</span>
-              <span>Powered by Modern Web Technologies</span>
+              <a
+                href="https://github.com/quang21122"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-300 underline-offset-4 hover:underline group"
+              >
+                <ExternalLink className="h-3 w-3 group-hover:scale-110 transition-transform duration-300" />
+                <span>quang21122</span>
+              </a>
             </div>
           </div>
         </div>

@@ -50,38 +50,171 @@
     #4facfe 100%
   );
 
-  /* Glass Effect Variables */
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  /* Light Mode Theme Variables */
+  --background-primary: 255 255 255;
+  --background-secondary: 248 250 252;
+  --background-tertiary: 241 245 249;
+  --text-primary: 15 23 42;
+  --text-secondary: 51 65 85;
+  --text-tertiary: 100 116 139;
+  --border-primary: 226 232 240;
+  --border-secondary: 203 213 225;
+
+  /* Light Mode Background Gradients */
+  --bg-gradient-main: linear-gradient(
+    135deg,
+    rgb(240 249 255) 0%,
+    rgb(255 255 255) 50%,
+    rgb(253 244 255) 100%
+  );
+  --bg-gradient-header: linear-gradient(
+    90deg,
+    rgba(59 130 246 / 0.05) 0%,
+    rgba(217 70 239 / 0.05) 50%,
+    rgba(14 165 233 / 0.05) 100%
+  );
+  --bg-gradient-footer: linear-gradient(
+    90deg,
+    rgba(255 255 255 / 0.05) 0%,
+    rgba(248 250 252 / 0.1) 100%
+  );
+
+  /* Glass Effect Variables - Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  --glass-backdrop: blur(16px) saturate(180%);
 
   /* Animation Variables */
   --animation-speed-fast: 0.2s;
   --animation-speed-normal: 0.3s;
   --animation-speed-slow: 0.5s;
+
+  /* Theme Transition */
+  --theme-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark {
+  /* Dark Mode Theme Variables */
+  --background-primary: 15 23 42;
+  --background-secondary: 30 41 59;
+  --background-tertiary: 51 65 85;
+  --text-primary: 248 250 252;
+  --text-secondary: 203 213 225;
+  --text-tertiary: 148 163 184;
+  --border-primary: 51 65 85;
+  --border-secondary: 71 85 105;
+
+  /* Dark Mode Background Gradients */
+  --bg-gradient-main: linear-gradient(
+    135deg,
+    rgb(15 23 42) 0%,
+    rgb(30 41 59) 50%,
+    rgb(51 65 85) 100%
+  );
+  --bg-gradient-header: linear-gradient(
+    90deg,
+    rgba(59 130 246 / 0.15) 0%,
+    rgba(217 70 239 / 0.15) 50%,
+    rgba(14 165 233 / 0.15) 100%
+  );
+  --bg-gradient-footer: linear-gradient(
+    90deg,
+    rgba(255 255 255 / 0.05) 0%,
+    rgba(255 255 255 / 0.05) 100%
+  );
+
+  /* Glass Effect Variables - Dark Mode */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --glass-backdrop: blur(20px) saturate(180%);
 }
 
-/* Enhanced Base Styles */
+/* Enhanced Base Styles with Theme Support */
 * {
-  border-color: rgba(203, 213, 225, 0.5);
+  border-color: rgb(var(--border-secondary) / 0.5);
+  transition: var(--theme-transition);
 }
 
-.dark * {
-  border-color: rgba(51, 65, 85, 0.5);
+html {
+  transition: var(--theme-transition);
 }
 
 body {
+  background-color: rgb(var(--background-primary));
+  color: rgb(var(--text-primary));
   font-feature-settings: "rlig" 1, "calt" 1;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: var(--theme-transition);
+}
+
+/* Ensure all elements transition smoothly during theme changes */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Override for elements with specific animations */
+[class*="animate-"],
+[class*="animation-"] {
+  transition: none;
+}
+
+/* Specific theme transition for background gradients */
+.bg-gradient-main,
+.bg-gradient-header,
+.bg-gradient-footer {
+  transition: background 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced theme-aware text colors */
+.text-primary {
+  color: rgb(var(--text-primary));
+}
+
+.text-secondary {
+  color: rgb(var(--text-secondary));
+}
+
+.text-tertiary {
+  color: rgb(var(--text-tertiary));
+}
+
+/* Enhanced theme-aware background colors */
+.bg-primary {
+  background-color: rgb(var(--background-primary));
+}
+
+.bg-secondary {
+  background-color: rgb(var(--background-secondary));
+}
+
+.bg-tertiary {
+  background-color: rgb(var(--background-tertiary));
+}
+
+/* Theme-aware gradient backgrounds */
+.bg-gradient-main {
+  background: var(--bg-gradient-main);
+  transition: var(--theme-transition);
+}
+
+.bg-gradient-header {
+  background: var(--bg-gradient-header);
+  transition: var(--theme-transition);
+}
+
+.bg-gradient-footer {
+  background: var(--bg-gradient-footer);
+  transition: var(--theme-transition);
 }
 
 /* Scrollbar Styling */
@@ -113,21 +246,40 @@ body {
 }
 
 /* Enhanced Component Styles */
-/* Enhanced Glass Morphism */
+/* Enhanced Glass Morphism with Theme Support */
 .glass-morphism {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+  transition: var(--theme-transition);
+}
+
+.glass-morphism:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.dark .glass-morphism:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .glass-morphism-strong {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.5);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+  transition: var(--theme-transition);
+}
+
+.dark .glass-morphism-strong {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* Neumorphism Effects */
@@ -141,7 +293,7 @@ body {
   box-shadow: 20px 20px 60px #1a1a1a, -20px -20px 60px #2e2e2e;
 }
 
-/* Enhanced Gradient Text */
+/* Enhanced Gradient Text with Theme Support */
 .gradient-text {
   background: var(--gradient-primary);
   -webkit-background-clip: text;
@@ -152,6 +304,18 @@ body {
   line-height: 1.2;
   padding-bottom: 4px;
   display: inline-block;
+  position: relative;
+}
+
+/* Fallback for better contrast in light mode */
+@supports not (-webkit-background-clip: text) {
+  .gradient-text {
+    color: rgb(var(--color-primary-600));
+  }
+
+  .dark .gradient-text {
+    color: rgb(var(--color-primary-400));
+  }
 }
 
 .gradient-text-secondary {
@@ -161,15 +325,39 @@ body {
   -webkit-text-fill-color: transparent;
   background-size: 200% 200%;
   animation: gradient-shift 4s ease infinite;
+  line-height: 1.2;
+  padding-bottom: 4px;
+  display: inline-block;
 }
 
-/* Enhanced Button Styles */
+/* Enhanced gradient text with better visibility */
+.gradient-text-vibrant {
+  background: linear-gradient(
+    135deg,
+    rgb(59 130 246) 0%,
+    rgb(147 51 234) 25%,
+    rgb(236 72 153) 50%,
+    rgb(239 68 68) 75%,
+    rgb(245 158 11) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 300% 300%;
+  animation: gradient-shift 4s ease infinite;
+  line-height: 1.2;
+  padding-bottom: 4px;
+  display: inline-block;
+}
+
+/* Enhanced Button Styles with Theme Support */
 .btn-gradient {
   background: var(--gradient-primary);
   background-size: 200% 200%;
-  transition: all var(--animation-speed-normal) ease;
+  transition: var(--theme-transition);
   position: relative;
   overflow: hidden;
+  border: 1px solid transparent;
 }
 
 .btn-gradient::before {
@@ -182,7 +370,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.3),
     transparent
   );
   transition: left 0.5s ease;
@@ -195,7 +383,25 @@ body {
 .btn-gradient:hover {
   background-position: right center;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4);
+}
+
+.dark .btn-gradient:hover {
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.6);
+}
+
+/* Theme-aware button variants */
+.btn-theme-aware {
+  background: rgb(var(--background-secondary));
+  color: rgb(var(--text-primary));
+  border: 1px solid rgb(var(--border-primary));
+  transition: var(--theme-transition);
+}
+
+.btn-theme-aware:hover {
+  background: rgb(var(--background-tertiary));
+  border-color: rgb(var(--border-secondary));
+  transform: translateY(-1px);
 }
 
 /* Enhanced Card Styles */
