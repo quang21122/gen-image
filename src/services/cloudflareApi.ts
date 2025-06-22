@@ -131,7 +131,6 @@ class CloudflareApiService {
       typeof window !== "undefined" &&
       (window.location.hostname.includes("github.io") ||
         import.meta.env.VITE_GITHUB_PAGES === "true" ||
-        // @ts-expect-error - defined in vite.config.ts
         (typeof __GITHUB_PAGES__ !== "undefined" && __GITHUB_PAGES__));
 
     if (isGitHubPages) {
